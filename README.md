@@ -6,17 +6,19 @@ CLI-tool for VMware Carbon Black Cloud REST API. Main purpose of this tool is to
 
 **API credentials**
 The credentials are stored in KeePass-database in following format:
+```
 title = instance name
 password = [API Secret Key]/[API ID]
 url = [dashboard url]
 notes = [Org key]
-
+```
 Example:
+```
 title = instance-1
 password = ABCDEFGHIJKLMNOPQRSTUVWX/12345678
 url = https://example.com/
 notes = ABCDEFGH
-
+```
 Ref. https://developer.carbonblack.com/reference/carbon-black-cloud/authentication/
 
 If you want to use the `-a` switch on this tool to sweep all instances with the query you need to create file `instances.txt` which contains the instance names, in the same directory as `cbc-cli.py`.
