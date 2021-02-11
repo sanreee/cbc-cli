@@ -32,7 +32,7 @@ keepass_path=/home/foo/cbc-api.kdbx
 
 # Usage
 ```
-usage: cbc-cli.py [-h] [-a] [-v] [-i] [-ho DEVICE_NAME] [-st TIMEWINDOW]
+usage: cbc-cli.py [-h] [-a] [-v] [-i] [-e] [-ho DEVICE_NAME] [-st TIMEWINDOW]
                   instance
 
 positional arguments:
@@ -44,6 +44,8 @@ optional arguments:
                    instances.txt
   -v               Verbose mode. Output all available fields as JSON
   -i               Interactive mode
+  -e               Enriched mode. Fetch enriched events. Contains more post-
+                   processed data, including process links.
   -ho DEVICE_NAME  Hostname to search
   -st TIMEWINDOW   Time window. y=year, w=week, d=day, h=hour, m=minute,
                    s=second
