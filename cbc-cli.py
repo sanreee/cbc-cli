@@ -62,7 +62,7 @@ parser.add_argument("-e", help="Enriched mode. Fetch enriched events. Contains m
 parser.add_argument("-ho", help="Hostname to search", default="*", dest='device_name')
 parser.add_argument("-st", help="Time window. y=year, w=week, d=day, h=hour, m=minute, s=second", default="4w", dest='timewindow')
 parser.add_argument("-x", help="HTTPS proxy :: e.g. -x 127.0.0.1:8080 - sorry no http :)", default=None, dest='proxy')
-parser.add_argument("-f", help="Feed search mode :: usage: -f feed.json :: cbfeeds format (github.com/carbonblack/cbfeeds)", default=None)
+parser.add_argument("-f", help="Feed search mode :: usage: -f feed.json :: cbfeeds format (https://github.com/carbonblack/cbfeeds)", default=None)
 
 args = parser.parse_args()
 passwd = getpass.getpass(prompt='Password for KeePass database: ')
@@ -104,7 +104,7 @@ def colorize(string, color):
 
 def printBanner():
   print(colorize(header,'pink'))
-  print(colorize('v0.0.3 by sanre','green'))
+  print(colorize('v0.0.1 by sanre','green'))
 
 def clearPrompt():
    print("\x1B[2J")
@@ -139,6 +139,10 @@ def doTheNeedful(q, sweepMode):
   else:
     if enrichedMode == True: enrichedSearch(q, instance,timewindow)
     else: processSearch(q, instance,timewindow)
+
+  input(colorize('Press enter to continue.', 'blue'))
+  clearPrompt()
+  mainMenu()
 
 def feedSearch(sweepMode):
   socfeed = open(args.f, "r", encoding="ascii")
