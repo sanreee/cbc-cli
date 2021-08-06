@@ -7,6 +7,7 @@ import requests
 import re
 import configparser
 import concurrent.futures
+import datetime
 from time import sleep
 from pykeepass import PyKeePass
 from collections import OrderedDict
@@ -63,6 +64,7 @@ parser.add_argument("-ho", help="Hostname to search", default="*", dest='device_
 parser.add_argument("-st", help="Time window. y=year, w=week, d=day, h=hour, m=minute, s=second", default="4w", dest='timewindow')
 parser.add_argument("-x", help="HTTPS proxy :: e.g. -x 127.0.0.1:8080 - sorry no http :)", default=None, dest='proxy')
 parser.add_argument("-f", help="Feed search mode :: usage: -f feed.json :: cbfeeds format (github.com/carbonblack/cbfeeds)", default=None)
+parser.add_argument("-w", help="Window search mode :: usage: -w 1440 :: Search events for timewindow of n-MINUTES around given process GUID")
 
 args = parser.parse_args()
 passwd = getpass.getpass(prompt='Password for KeePass database: ')
@@ -104,7 +106,7 @@ def colorize(string, color):
 
 def printBanner():
   print(colorize(header,'pink'))
-  print(colorize('v0.0.3 by sanre','green'))
+  print(colorize('v0.0.4 by sanre','green'))
 
 def clearPrompt():
    print("\x1B[2J")
@@ -129,6 +131,7 @@ def doTheNeedful(q, sweepMode):
             pass
           else:
             print(result)
+            return(result)
     else:
       with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         for result in executor.map(lambda p: processSearch(*p), args):
@@ -136,13 +139,42 @@ def doTheNeedful(q, sweepMode):
             pass
           else:
             print(result)
+            return(result)
   else:
-    if enrichedMode == True: enrichedSearch(q, instance,timewindow)
-    else: processSearch(q, instance,timewindow)
+    if enrichedMode == True: 
+      return(enrichedSearch(q, instance,timewindow))
+    else: 
+      return(processSearch(q, instance,timewindow))
 
   input(colorize('Press enter to continue.', 'blue'))
   clearPrompt()
   mainMenu()
+
+def windowSearch(sweepMode):
+  window = args.w
+  proc_guid = str(input("GUID> "))
+  # 3A769AKMWN-003e2b21-00000434-00000000-1d7523d77de90e6
+  if re.match("^[{]?([0-9a-zA-Z]{8}|[0-9a-zA-Z]{9}|[0-9a-zA-Z]{10}|[0-9a-zA-Z]{11}|[0-9a-zA-Z]{12})-([0-9a-fA-F]{8}-){3}[0-9a-fA-F]{15}[}]?$", proc_guid):
+    # first get the process document for the GUID and parse it's timestamp
+    q = f"process_guid:{proc_guid}"
+    proc_document = doTheNeedful(q, sweepMode)
+    if proc_document['results'][0]:
+      process_start_time = proc_document['results'][0]['process_start_time']
+      print(f"Original timestamp: {process_start_time}")
+      print(colorize("Event found for GUID, fetching results for the window", 'pink'))
+      proc_device = proc_document['results'][0]['device_name']
+      if "\\" in proc_device: 
+        proc_device = proc_device.split("\\")[1]
+      args.device_name = proc_device
+      process_start_time = datetime.datetime.strptime(process_start_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+      earliest_ts = datetime.datetime.strftime(process_start_time - datetime.timedelta(minutes=int(window)), "%Y-%m-%dT%H:%M:%S.%fZ")
+      latest_ts = datetime.datetime.strftime(process_start_time + datetime.timedelta(minutes=int(window)), "%Y-%m-%dT%H:%M:%S.%fZ")
+      q = f"process_start_time:[{earliest_ts} TO {latest_ts}]"
+      doTheNeedful(q, sweepMode)
+
+  else:
+    print("ERROR: Does not look like a GUID, exiting...")
+    exit()
 
 def feedSearch(sweepMode):
   socfeed = open(args.f, "r", encoding="ascii")
@@ -334,6 +366,7 @@ def processSearch(q, instance, timewindow):
             rows += 500
             if verboseMode == True:
               pprint.pprint(job_result_done)
+              return(job_result_done)
               break
             else:
               for result in job_result_done['results']:
@@ -351,6 +384,7 @@ def processSearch(q, instance, timewindow):
                   pass
                 link_process = result['link_process']
                 print("{0} {1} {2} {3} {4} \n\033[1;30;40m{5}\033[m".format(process_start_time, instance.strip(), device_name, process_username, process_cmdline, link_process))
+              return(job_result_done)
               break
 
     else: 
@@ -430,6 +464,7 @@ def enrichedSearch(q, instance, timewindow):
             rows += 500
             if verboseMode == True:
               pprint.pprint(job_result_done)
+              return(job_result_done)
               break
             else:
               for result in job_result_done['results']:
@@ -439,6 +474,7 @@ def enrichedSearch(q, instance, timewindow):
                 process_cmdline = result['process_cmdline']
                 link_process = result['link_process']
                 print("{0} {1} {2} {3} {4} \n\033[1;30;40m{5}\033[m".format(process_start_time, instance.strip(), device_name, process_username, process_cmdline, link_process))
+              return(job_result_done)
               break
 
     else: 
@@ -448,4 +484,6 @@ if args.i == True:
   mainMenu(sweepMode)
 elif args.f:
   feedSearch(sweepMode)
+elif args.w:
+  windowSearch(sweepMode)
 else: freeSearch(sweepMode)
