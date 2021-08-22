@@ -32,23 +32,23 @@ keepass_path=/home/foo/cbc-api.kdbx
 
 # Usage
 ```
-usage: cbc-cli.py [-h] [-a] [-v] [-i] [-e] [-ho DEVICE_NAME] [-st TIMEWINDOW]
-                  instance
+usage: cbc-cli.py [-h] [-a] [-v] [-i] [-e] [-ho DEVICE_NAME] [-st TIMEWINDOW] [-x PROXY] [-f F] [-w W] instance
 
 positional arguments:
   instance         Instance name
 
 optional arguments:
   -h, --help       show this help message and exit
-  -a               Sweep mode. When declared, it goes through all instances in
-                   instances.txt
+  -a               Sweep mode. When declared, it goes through all instances in instances.txt
   -v               Verbose mode. Output all available fields as JSON
   -i               Interactive mode
-  -e               Enriched mode. Fetch enriched events. Contains more post-
-                   processed data, including process links.
+  -e               Enriched mode. Fetch enriched events. Contains more post-processed data, including process links.
   -ho DEVICE_NAME  Hostname to search
-  -st TIMEWINDOW   Time window. y=year, w=week, d=day, h=hour, m=minute,
-                   s=second
+  -st TIMEWINDOW   Time window. y=year, w=week, d=day, h=hour, m=minute, s=second
+  -x PROXY         HTTPS proxy :: e.g. -x 127.0.0.1:8080 - sorry no http :)
+  -f F             Feed search mode :: usage: -f feed.json :: cbfeeds format (github.com/carbonblack/cbfeeds)
+  -w W             Window search mode :: usage: -w 1440 :: Search events for timewindow of n-MINUTES around given
+                   process GUID
 ```
 
 
